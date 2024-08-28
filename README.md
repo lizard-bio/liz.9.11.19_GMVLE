@@ -12,12 +12,27 @@ The idea is to develop a machine learning model based on various features of the
 
 Currently, the results are stored on the ICR server. Project data is stored in /liz.9.11.19_GMVLE/.
 
+## 2.1 Original input data to the ICR reannotate pipeline
+
+Original ashkenazi father vcf file is stored in the following location: https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/
+
+* [The true VCF file (confident regions) of the Ashkenazi father (HG003)](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz): HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+* [Index for this VCF file](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi): HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
+* (*Not necessary in this project*) [BED file that is required to know what those confident region are](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed): HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+
+## 2.2 Human reference genome
+
+SDF of the refernce genome is located on the ICR server: /mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF
+
+* [grch38 reference genome](https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/)
+
 # 3. Approach
 ## 3.1. ICR reannotate pipeline
 
 First, we utilized the ICR reannotate pipeline with data from the Genome in a Bottle project, employing four germline variant callers (DeepVariant, Freebayes, Strelka2, and Octopus) to generate the corresponding VCF files.
 
-Four VCF files (one per caller) for the Ashkenazim father (HG003_NA24149) are created using the [ICR-reannotate-pipeline](https://github.com/lizard-bio/ICR-reannotate-pipeline).
+Four VCF files (one per caller) for the Ashkenazim father (HG003_NA24149) are created using the [ICR-reannotate-pipeline](https://github.com/lizard-bio/ICR-reannotate-pipeline). (fastq files were used as input)
+
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.dv.vcf
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.fb.vcf
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.oc.vcf
