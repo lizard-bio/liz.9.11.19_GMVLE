@@ -1,0 +1,21 @@
+name: icr-variant_prediction
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - coverage
+  - black
+  - python-dotenv>=0.5.1
+  - pre_commit
+  - ipykernel
+  - pandas
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - pytorch
+  - torchvision
+  - numpy
+  - notebook
+  - jupyter_client[version='<8']
+  
