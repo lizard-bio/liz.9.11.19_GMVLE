@@ -38,11 +38,70 @@ Four VCF files (one per caller) for the Ashkenazim father (HG003_NA24149) are cr
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.oc.vcf
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.st.vcf
 
-
-
 ## 3.2 Evaluation of the variant callers
 
 The next step is to evaluate the accuracy of each variant caller against a truth set (genome in a bottle). We will compare the results of the four variant callers to the truth set to determine the sensitivity, specificity, and accuracy of each caller. [RTG Tools](https://realtimegenomics.github.io/rtg-tools/rtg_command_reference.html#vcfeval) will be used to compare the VCF files to the truth set.
+
+### 3.2.1 Benchmarkfile
+
+Get the [benchmark vcf file](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz) from the genome in a bottle project:
+https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/
+
+The benchmark vcf file has chr1, chr2, ..., chr22, chrX, chrY, chrM for contig ids, while the variants vcf files have 1, 2, ..., 22, X, Y, MT for contig ids.
+
+```bash
+# this script renames the contig ids in the benchmark vcf file to match the variant vcf files
+
+# unpack the benchmark vcf file, while keeping the original file
+gunzip HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz > HG003_GRCh38_1_22_v4.2.1_benchmark.vcf
+
+# copy the benchmark vcf file into a new file
+cp HG003_GRCh38_1_22_v4.2.1_benchmark.vcf HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf
+
+# Now, replace the contig ids in the benchmark vcf file in place, for all contigs
+for i in $(seq 1 22) X Y; do 
+    sed -i "s/chr$i/$i/" HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf; 
+done
+
+# replace chrM with MT
+sed -i "s/chrM/MT/" HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf; 
+
+# compress the new benchmark vcf file, as vcftools expects .gz files
+bgzip HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz
+```
+
+Vcftools expects a .tbi index file for the benchmark vcf file to be present in the folder. For the original benchmark vcf file, the index file is provided and named HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi. However, because the changes the sequence names, we have recreate it ourselves using the tabix package 
+
+We need to rename it to match the new benchmark vcf file.:
+
+```bash
+tabix HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz
+```
+
+### 3.2.2 Variant caller files
+
+These files should also be compressed into a .gz file:
+
+```bash
+
+for i in dv fb oc st; do 
+bgzip < HG003_NA24149_Ashkenazim_father.trim.${i}.vcf > HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
+tabix HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
+done
+```
+
+### 3.2.3 Run vcfeval
+
+* benchmark file: HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz and its index file HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz.tbi are located in the current folder
+* caller file: HG003_NA24149_Ashkenazim_father.trim.dv.vcf.gz and its index file HG003_NA24149_Ashkenazim_father.trim.dv.vcf.gz.tbi are located in the results/variants folder
+* reference genome: /mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF-o
+
+```bash
+# run vcfeval
+for i in dv fb oc st; do 
+rtg-tools-3.12.1/rtg vcfeval -b HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz -c results/variants/HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz -t ../../mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF-o -o vcfeval_${i}; 
+done
+```
 
 ## 3.3 Combine the results of the variant callers
 
