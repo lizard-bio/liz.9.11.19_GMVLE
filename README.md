@@ -107,8 +107,23 @@ Only evaluate for certain regions where the genome in a bottle has confident reg
 
 ```bash
 # run vcfeval
-for i in dv fb oc st; do 
-   rtg-tools-3.12.1/rtg vcfeval -b HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz -c results/variants/HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz -t ../../mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF -e HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent_new.bed -o vcfeval_${i}; 
+for i in dv fb oc st; do \
+   rtg-tools-3.12.1/rtg vcfeval \
+   # benchmark file
+   -b HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz \
+   # caller file
+   -c results/variants/HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz \
+   # reference genome
+   -t ../../mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF \
+   # OPTIONAL: BED file with confident regions
+   -e HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent_new.bed \
+   # OPTIONAL: QUAL threshold (default is GQ, but freebayes does not have GQ)
+   -f QUAL
+   # output folder, add suffixes when appropriate
+   # _noinconsistent: when using the BED file with confident regions
+   # _withoutseq: whenreference sequences that are not in the baseline are removed
+   # _qual: when using the QUAL threshold
+   -o vcfeval_${i}; \
 done
 ```
 
@@ -127,12 +142,13 @@ KI270727.1
 KI270442.1
 ```
 
-Then, remove these sequences from the baseline reference genome:
+Then, remove these sequences from all the caller variant vcf files:
 ```bash
-gunzip HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz > HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf
-grep -v -f list_of_sequences_to_remove.txt HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf
-bgzip HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf.gz
-tabix HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf.gz
+for i in dv fb oc st; do
+   grep -v -f list_of_sequences_to_remove.txt HG003_NA24149_Ashkenazim_father.trim.${i}.vcf  > HG003_NA24149_Ashkenazim_father.trim.${i}_withoutseq.vcf;
+   bgzip HG003_NA24149_Ashkenazim_father.trim.${i}_withoutseq.vcf > HG003_NA24149_Ashkenazim_father.trim.${i}_withoutseq.vcf.gz;
+   tabix HG003_NA24149_Ashkenazim_father.trim.${i}_withoutseq.vcf.gz;
+done
 ```
 
 ## 3.3 Combine the results of the variant callers
