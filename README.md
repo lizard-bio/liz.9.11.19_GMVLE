@@ -18,7 +18,7 @@ Original ashkenazi father vcf file is stored in the following location: https://
 
 * [The true VCF file (confident regions) of the Ashkenazi father (HG003)](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz): HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
 * [Index for this VCF file](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi): HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi
-* (*Not necessary in this project*) [BED file that is required to know what those confident region are](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed): HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+* [BED file that is required to know what those confident region are](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed): HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
 
 ## 2.2 Human reference genome
 
@@ -47,24 +47,31 @@ The next step is to evaluate the accuracy of each variant caller against a truth
 Get the [benchmark vcf file](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz) from the genome in a bottle project:
 https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/
 
-The benchmark vcf file has chr1, chr2, ..., chr22, chrX, chrY, chrM for contig ids, while the variants vcf files have 1, 2, ..., 22, X, Y, MT for contig ids.
+The benchmark vcf file, and its BED file has chr1, chr2, ..., chr22, chrX, chrY, chrM for contig ids, while the variants vcf files have 1, 2, ..., 22, X, Y, MT for contig ids.
 
 ```bash
 # this script renames the contig ids in the benchmark vcf file to match the variant vcf files
 
+# get the benchmark vcf and BED file
+wget wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+wget https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38/HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+
 # unpack the benchmark vcf file, while keeping the original file
 gunzip HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz > HG003_GRCh38_1_22_v4.2.1_benchmark.vcf
 
-# copy the benchmark vcf file into a new file
+# copy the benchmark vcf and BED file into a new file
 cp HG003_GRCh38_1_22_v4.2.1_benchmark.vcf HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf
+cp HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent_new.bed
 
-# Now, replace the contig ids in the benchmark vcf file in place, for all contigs
+# Now, replace the contig ids in the benchmark and BED vcf file in place, for all contigs
 for i in $(seq 1 22) X Y; do 
     sed -i "s/chr$i/$i/" HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf; 
+    sed -i "s/chr$i/$i/" HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent_new.bed;
 done
 
 # replace chrM with MT
-sed -i "s/chrM/MT/" HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf; 
+sed -i "s/chrM/MT/" HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf;
+sed -i "s/chrM/MT/" HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed; 
 
 # compress the new benchmark vcf file, as vcftools expects .gz files
 bgzip HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz
@@ -85,12 +92,14 @@ These files should also be compressed into a .gz file:
 ```bash
 
 for i in dv fb oc st; do 
-bgzip < HG003_NA24149_Ashkenazim_father.trim.${i}.vcf > HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
-tabix HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
+   bgzip < HG003_NA24149_Ashkenazim_father.trim.${i}.vcf > HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
+   tabix HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz;
 done
-```
+```   
 
 ### 3.2.3 Run vcfeval
+
+Only evaluate for certain regions where the genome in a bottle has confident regions. The confident regions are defined in the BED file.
 
 * benchmark file: HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz and its index file HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz.tbi are located in the current folder
 * caller file: HG003_NA24149_Ashkenazim_father.trim.dv.vcf.gz and its index file HG003_NA24149_Ashkenazim_father.trim.dv.vcf.gz.tbi are located in the results/variants folder
@@ -99,8 +108,31 @@ done
 ```bash
 # run vcfeval
 for i in dv fb oc st; do 
-rtg-tools-3.12.1/rtg vcfeval -b HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz -c results/variants/HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz -t ../../mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF-o -o vcfeval_${i}; 
+   rtg-tools-3.12.1/rtg vcfeval -b HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz -c results/variants/HG003_NA24149_Ashkenazim_father.trim.${i}.vcf.gz -t ../../mnt/results/Liz.9.14/compare-vcf-file/human_REF_SDF -e HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent_new.bed -o vcfeval_${i}; 
 done
+```
+
+### 3.2.4 Remove reference sequences that are not in the baseline
+After running vcfeval, we need to remove the reference sequences that are not in the baseline. Vcfeval will output a warning for these sequences, for example:
+```bash
+Reference sequence KI270728.1 is used in calls but not in baseline.
+Reference sequence KI270727.1 is used in calls but not in baseline.
+Reference sequence KI270442.1 is used in calls but not in baseline.
+```
+
+copy those lines into a new file "list_of_sequences_to_remove.txt", but only keep the sequence names, for example:
+```bash
+KI270728.1
+KI270727.1
+KI270442.1
+```
+
+Then, remove these sequences from the baseline reference genome:
+```bash
+gunzip HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz > HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf
+grep -v -f list_of_sequences_to_remove.txt HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf
+bgzip HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf > HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf.gz
+tabix HG003_GRCh38_1_22_v4.2.1_benchmark_new_withoutseq.vcf.gz
 ```
 
 ## 3.3 Combine the results of the variant callers
