@@ -38,6 +38,8 @@ Four VCF files (one per caller) for the Ashkenazim father (HG003_NA24149) are cr
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.oc.vcf
    * liz.9.11.19_GMVLE/results/variants/HG003_NA24149_Ashkenazim_father.trim.st.vcf
 
+Watch out: based on the CHROM and POS index columns, duplicated locations are found for oc and st (multiple rows for a given location)
+
 ## 3.2 Evaluation of the variant callers
 
 The next step is to evaluate the accuracy of each variant caller against a truth set (genome in a bottle). We will compare the results of the four variant callers to the truth set to determine the sensitivity, specificity, and accuracy of each caller. [RTG Tools](https://realtimegenomics.github.io/rtg-tools/rtg_command_reference.html#vcfeval) will be used to compare the VCF files to the truth set.
