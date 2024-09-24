@@ -87,6 +87,15 @@ We need to rename it to match the new benchmark vcf file.:
 tabix HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz
 ```
 
+*Optional: Benchmark with only indels*
+If we want to evaluate the variant callers only on indels, we can filter the benchmark vcf file for indels only. This can be done with rtg-tools:
+
+```bash
+rtg-tools-3.12.1/rtg vcffilter -i HG003_GRCh38_1_22_v4.2.1_benchmark_new.vcf.gz -o HG003_GRCh38_1_22_v4.2.1_benchmark_indels.vcf.gz --non-snps-only
+```
+
+However, vcfeval does not recommand splitting the benchmark file into SNPs and indels prior to evaluation. Instead, it provides non_snp_roc and snp_roc files in the output folder, which can be used to evaluate the performance of the variant callers on SNPs and indels separately.
+
 ### 3.2.2 Variant caller files
 
 These files should also be compressed into a .gz file:
