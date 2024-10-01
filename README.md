@@ -26,6 +26,10 @@ SDF of the refernce genome is located on the ICR server: /mnt/results/Liz.9.14/c
 
 * [grch38 reference genome](https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/)
 
+## 2.3 HLA complex (difficult region to predict)
+*Reference:* https://www.ebi.ac.uk/ipd/imgt/hla/about/help/genomics/
+If only interested in this region: set BED file to only include chr6 from 29 677 984 (GABBR1) to 33 485 635 (KIFC1).
+
 # 3. Approach
 ## 3.1. ICR reannotate pipeline
 
